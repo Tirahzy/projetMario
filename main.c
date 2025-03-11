@@ -37,7 +37,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Chargement de l'image du menu
-    menu = SDL_LoadBMP("../image/menu.bmp");
+    menu = SDL_LoadBMP("../projetMario/image/menu.bmp");
     if (!menu) {
         printf("Erreur chargement menu.bmp : %s\n", SDL_GetError());
         SDL_DestroyWindow(window);
