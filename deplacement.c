@@ -31,6 +31,37 @@ void sauter(Mario *mario) {
 
 }
 
+bool collisionPlante(Mario *mario, Plante *plante)
+{
+    if (mario->x == plante->x && mario->y == plante->y)
+    {
+        plante->est_touche = 1;
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool collision_brique(Mario *mario, Brique *brique) {
+    if (mario->x + mario->w > brique->x && mario->x < brique->x + brique->w && mario->y + mario->h > brique->y && mario->y < brique->y + brique->h) {
+        brique->est_touche = 1;
+        return true;
+    } else {
+        return false;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
