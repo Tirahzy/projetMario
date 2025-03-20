@@ -16,7 +16,7 @@ typedef struct {
     int pieces;
 } Mario;
 
-typedef struct {
+/* typedef struct {
     int x;
     int y;
     int w;
@@ -36,15 +36,16 @@ typedef struct {
     int x;
     int y;
     int visible;
-}Piece;
+}Piece; */
 
 void initialiserMario(Mario *mario);
+void afficherGrille(char grille[20][20], Mario *mario);
+void initialiserGrille(char grille[20][20]);
 void deplacement(Mario *mario, char direction);
+void miseAJourSaut(Mario *mario);
 void sauter(Mario *mario);
-void collisionPlante(Mario *mario, Plante *plante);
-void collision_brique(Mario *mario, Brique *brique);
-void collisionAvecBrique(Mario *mario, Brique *brique, Piece *piece);
-void gererPiece(Mario *mario, Brique *brique, Piece *piece);
+
+#endif
 
 
 
@@ -75,6 +76,3 @@ void gererPiece(Mario *mario, Brique *brique, Piece *piece);
 
 
 
-
-
-#endif //FONCTION_H
