@@ -39,8 +39,8 @@ typedef struct {
 }Piece; */
 
 void initialiserMario(Mario *mario);
-void afficherGrille(char grille[20][20], Mario *mario);
-void initialiserGrille(char grille[20][20]);
+void afficherGrille(char grille[20][40], Mario *mario);
+void initialiserGrille(char grille[20][40]);
 void deplacement(Mario *mario, char direction);
 void miseAJourSaut(Mario *mario);
 void sauter(Mario *mario);

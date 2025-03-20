@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <conio.h>
-#include "fonction.h"
 #include <windows.h>
 #include <unistd.h>
 
+#include "fonction.h"
 
-#define SOL 0 // Ligne du sol (hauteur fixe)
+#define SOL 0  // Ligne du sol (hauteur fixe)
 
 void initialiserMario(Mario *mario) {
     mario->x = 0;
@@ -15,10 +15,10 @@ void initialiserMario(Mario *mario) {
     mario->contact = 1;
 }
 
-void initialiserGrille(char grille[20][20]) {
+void initialiserGrille(char grille[20][40]) {
     for (int y = 0; y < 20; y++) {
-        for (int x = 0; x < 20; x++) {
-            if (y == 20 - 1) {
+        for (int x = 0; x < 40; x++) {
+            if (y == 19) {
                 grille[y][x] = '_';
             } else {
                 grille[y][x] = '.';
@@ -27,13 +27,11 @@ void initialiserGrille(char grille[20][20]) {
     }
 }
 
-
-void afficherGrille(char grille[20][20], Mario *mario) {
-    system("cls");
-
+void afficherGrille(char grille[20][40], Mario *mario) {
+    system("cls"); // Nettoyer l'écran
     for (int y = 0; y < 20; y++) {
-        for (int x = 0; x < 20; x++) {
-            if (x == mario->x && y == (20 - 1) - mario->y) {
+        for (int x = 0; x < 40; x++) {
+            if (x == mario->x && y == 19 - mario->y) {
                 printf("@");
             } else {
                 printf("%c", grille[y][x]);
@@ -51,7 +49,7 @@ void deplacement(Mario *mario, char direction) {
             }
             break;
         case 'd':
-            if (mario->x < 20 - 1) {
+            if (mario->x < 39) {
                 mario->x += 1;
             }
             break;
@@ -65,23 +63,58 @@ void deplacement(Mario *mario, char direction) {
 
 void sauter(Mario *mario) {
     if (mario->contact == 1) {
-        mario->sauter = 1;
+        mario->sauter = 2;
         mario->contact = 0;
     }
 }
 
 void miseAJourSaut(Mario *mario) {
-    if (mario->sauter == 1) {
+    if (mario->sauter > 0) {
         mario->y += 1;
-        if (mario->y >= 2) {
-            mario->sauter = 0;
-        }
+        mario->sauter--;
     } else if (mario->y > SOL) {
         mario->y -= 1;
     } else {
         mario->contact = 1;
     }
 }
+
+int main() {
+    Mario mario;
+    char grille[20][40];
+    char input;
+
+    initialiserMario(&mario);
+    initialiserGrille(grille);
+
+    printf("Bienvenue dans Mario simplifié !\n");
+    printf("Commandes :\n");
+    printf("Z : Sauter\n");
+    printf("Q : Gauche\n");
+    printf("D : Droite\n");
+    printf("Espace : Quitter\n");
+    Sleep(2000);
+    system("cls");
+
+    while (1) {
+        afficherGrille(grille, &mario);
+
+        if (_kbhit()) {
+            input = _getch();
+            if (input == 32) {
+                printf("Merci d'avoir joué !\n");
+                break;
+            }
+            deplacement(&mario, input);
+        }
+
+        miseAJourSaut(&mario);
+        Sleep(50);
+    }
+    return 0;
+}
+
+
 
 /* bool collisionPlante(Mario *mario, Plante *plante)
   {
@@ -126,44 +159,6 @@ void miseAJourSaut(Mario *mario) {
         mario->pieces++;
     }
 } */
-
-
-int main() {
-    Mario mario;
-    char grille[20][20];
-    char input;
-
-    initialiserMario(&mario);
-    initialiserGrille(grille);
-
-    printf("Bienvenue dans Mario simplifié !\n");
-    printf("Commandes :\n");
-    printf("Z : Sauter\n");
-    printf("Q : Gauche\n");
-    printf("D : Droite\n");
-    printf("Espace : Quitter\n");
-
-    while (1) {
-        afficherGrille(grille, &mario);
-
-        if (_kbhit()) {
-            input = _getch();
-
-            if (input == 32) {
-                printf("Merci d'avoir joué !\n");
-                break;
-            }
-
-            deplacement(&mario, input);
-        }
-
-        miseAJourSaut(&mario);
-
-        Sleep(100);
-    }
-
-    return 0;
-}
 
 
 
