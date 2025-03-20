@@ -4,4 +4,4 @@
 int main() {
     affichageMenu(0, NULL);
 }
-test
+test2
