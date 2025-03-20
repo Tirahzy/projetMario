@@ -1,3 +1,0 @@
-C:/Users/nonon/CLionProjects/projetMario/cmake-build-debug/CMakeFiles/projetMario.dir
-C:/Users/nonon/CLionProjects/projetMario/cmake-build-debug/CMakeFiles/edit_cache.dir
-C:/Users/nonon/CLionProjects/projetMario/cmake-build-debug/CMakeFiles/rebuild_cache.dir
