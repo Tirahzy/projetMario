@@ -79,6 +79,11 @@ void miseAJourSaut(Mario *mario) {
     }
 }
 
+void clearScreen() {
+    printf("\033[H\033[J"); // Déplace le curseur en haut à gauche et efface l'écran
+}
+
+
 int main() {
     Mario mario;
     char grille[20][40];
@@ -97,6 +102,7 @@ int main() {
     system("cls");
 
     while (1) {
+        clearScreen(); // nettoyer ecran
         afficherGrille(grille, &mario);
 
         if (_kbhit()) {
@@ -113,6 +119,3 @@ int main() {
     }
     return 0;
 }
-
-
-

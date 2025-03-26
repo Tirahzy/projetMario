@@ -38,11 +38,11 @@ int y;
 int visible;
 }Piece;
 
-void initialiserMario(Mariomario);
-void afficherGrille(char grille[20][40], Mario mario);
+void initialiserMario(Mario *mario);
+void afficherGrille(char grille[20][40], Mario *mario);
 void initialiserGrille(char grille[20][40]);
-void deplacement(Mariomario, char direction);
-void miseAJourSaut(Mario mario);
-void sauter(Mariomario);
+void deplacement(Mario *mario, char direction);
+void miseAJourSaut(Mario *mario);
+void sauter(Mario *mario);
 
 #endif
