@@ -1,17 +1,48 @@
 #ifndef FONCTION_H
 #define FONCTION_H
-#include <stdio.h>
 #include <stdlib.h>
-#include <windows.h>
-#include <SDL2/SDL.h>
+#include <stdio.h>
 
 typedef struct {
     int x;
     int y;
     int w;
     int h;
+    int vitesse;
+    int sauter;
+    int contact;
+    int vie;
+    int points;
+    int pieces;
 } Mario;
 
-int affichageMenu(int argc, char* argv[]);
+ typedef struct {
+int x;
+int y;
+int w;
+int h;
+int est_touche;
+}Plante;
 
-#endif //FONCTION_H
+typedef struct {
+int x;
+int y;
+int w;
+int h;
+int est_touche;
+}Brique;
+
+typedef struct {
+int x;
+int y;
+int visible;
+}Piece;
+
+void initialiserMario(Mariomario);
+void afficherGrille(char grille[20][40], Mario mario);
+void initialiserGrille(char grille[20][40]);
+void deplacement(Mariomario, char direction);
+void miseAJourSaut(Mario mario);
+void sauter(Mariomario);
+
+#endif
