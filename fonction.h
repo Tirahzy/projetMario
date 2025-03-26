@@ -2,6 +2,7 @@
 #define FONCTION_H
 #include <stdlib.h>
 #include <stdio.h>
+#include <SDL2/SDL.h>
 
 typedef struct {
     int x;

@@ -1,45 +1,24 @@
 #include "fonction.h"
 
- bool collisionPlante(Mario *mario, Plante *plante)
-  {
-      if (mario->x < plante->x && mario->x + mario->w > plante->x &&  //condition de collision entre deux rectangles
-          mario->y < plante->y && mario->y + mario->h > plante->y) {
-          plante->est_touche = 1;
-          return true;
-      } else {
-          return false;
-      }
-  }
+#define LARGEUR_FENETRE 640
+#define HAUTEUR_FENETRE 320
+#define TAILLE_TILE 32
+#define GRAVITE 1
+#define VITESSE_X 4
+#define IMPULSION_SAUT 14
+int estCollision(int x, int y) {
+     int tileX = x / TAILLE_TILE;
+     int tileY = y / TAILLE_TILE;
+     if (tileX < 0  tileX >= 200  tileY < 0  tileY >= 10) return 1;
+     return map[tileY][tileX] == '#'  map[tileY][tileX] == '=';
+}
 
- bool collision_brique(Mario *mario, Brique *brique) {
-      if (mario->x + mario->w > brique->x &&                        // meme logique
-          mario->x < brique->x + brique->w &&
-          mario->y + mario->h > brique->y &&
-          mario->y < brique->y + brique->h) {
-          brique->est_touche = 1;
-          return true;
-      }
-      return false;
-  } */
+int planteCollision( Plante *est_touchee,Mario *mario) {
+  est_touchee = malloc(sizeof(Plante));
+     if (mario->x + mario->w < est_touchee->x) return 0;
+     if (mario->x > est_touchee->x + est_touchee->w) return 0;
+     if (mario->y + mario->h < est_touchee->y) return 0;
+     if (mario->y > est_touchee->y + est_touchee->h) return 0;
+     return 1;
 
- void collisionAvecBrique(Mario *mario, Brique *brique, Piece *piece) {
-    if (brique == NULL) {    // Verifie si la brique est valide
-        return;
-    }
-    if (collision_brique(mario, brique)) {  // Verifie la collision et met à jour `est_touche`
-        gererPiece(mario, brique, piece);
-    }
-} 
-
-
- void gererPiece(Mario *mario, Brique *brique, Piece *piece) {
-    if (brique->est_touche) {
-        if (!piece->visible) {
-            piece->x = brique->x + brique->w / 2; // Position au centre de la brique
-            piece->y = brique->y - 10;           // Au-dessus de la brique
-            piece->visible = 1;                  // Piece devient visible
-        }
-        mario->points += 50;
-        mario->pieces++;
-    }
 }
