@@ -13,6 +13,8 @@ void initialiserMario(Mario *mario) {
     mario->y = SOL;
     mario->sauter = 0;
     mario->contact = 1;
+    mario->points = 0;
+    mario->pieces = 0;
 }
 
 void initialiserGrille(char grille[20][40]) {
@@ -25,6 +27,9 @@ void initialiserGrille(char grille[20][40]) {
             }
         }
     }
+    grille[18][5] = 'O';
+    grille[18][15] = 'O';
+    grille[18][25] = 'O';
 }
 
 void afficherGrille(char grille[20][40], Mario *mario) {
@@ -39,6 +44,8 @@ void afficherGrille(char grille[20][40], Mario *mario) {
         }
         printf("\n");
     }
+    printf("Score: %d\n", mario->points);
+    printf("Pièces: %d\n", mario->pieces);
 }
 
 void deplacement(Mario *mario, char direction) {
@@ -79,6 +86,16 @@ void miseAJourSaut(Mario *mario) {
     }
 }
 
+void verifierCollectePieces(Mario *mario, char grille[20][40]) {
+    int y = 19 - mario->y;
+    int x = mario->x;
+    if (grille[y][x] == 'O') {
+        mario->pieces++;
+        mario->points += 100;
+        grille[y][x] = '.';
+    }
+}
+
 void clearScreen() {
     printf("\033[H\033[J"); // Déplace le curseur en haut à gauche et efface l'écran
 }
@@ -115,6 +132,7 @@ int main() {
         }
 
         miseAJourSaut(&mario);
+        verifierCollectePieces(&mario, grille);
         Sleep(50);
     }
     return 0;
@@ -122,49 +140,6 @@ int main() {
 
 
 
-/* bool collisionPlante(Mario *mario, Plante *plante)
-  {
-      if (mario->x < plante->x && mario->x + mario->w > plante->x &&  //condition de collision entre deux rectangles
-          mario->y < plante->y && mario->y + mario->h > plante->y) {
-          plante->est_touche = 1;
-          return true;
-      } else {
-          return false;
-      }
-  } /*
-
-/* bool collision_brique(Mario *mario, Brique *brique) {
-      if (mario->x + mario->w > brique->x &&                        // meme logique
-          mario->x < brique->x + brique->w &&
-          mario->y + mario->h > brique->y &&
-          mario->y < brique->y + brique->h) {
-          brique->est_touche = 1;
-          return true;
-      }
-      return false;
-  } */
-
-/* void collisionAvecBrique(Mario *mario, Brique *brique, Piece *piece) {
-    if (brique == NULL) {    // Verifie si la brique est valide
-        return;
-    }
-    if (collision_brique(mario, brique)) {  // Verifie la collision et met à jour `est_touche`
-        gererPiece(mario, brique, piece);
-    }
-} */
-
-
-/* void gererPiece(Mario *mario, Brique *brique, Piece *piece) {
-    if (brique->est_touche) {
-        if (!piece->visible) {
-            piece->x = brique->x + brique->w / 2; // Position au centre de la brique
-            piece->y = brique->y - 10;           // Au-dessus de la brique
-            piece->visible = 1;                  // Piece devient visible
-        }
-        mario->points += 50;
-        mario->pieces++;
-    }
-} */
 
 
 

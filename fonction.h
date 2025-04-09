@@ -16,27 +16,6 @@ typedef struct {
     int pieces;
 } Mario;
 
-/* typedef struct {
-    int x;
-    int y;
-    int w;
-    int h;
-    int est_touche;
-}Plante;
-
-typedef struct {
-    int x;
-    int y;
-    int w;
-    int h;
-    int est_touche;
-}Brique;
-
-typedef struct {
-    int x;
-    int y;
-    int visible;
-}Piece; */
 
 void initialiserMario(Mario *mario);
 void afficherGrille(char grille[20][40], Mario *mario);
@@ -44,6 +23,7 @@ void initialiserGrille(char grille[20][40]);
 void deplacement(Mario *mario, char direction);
 void miseAJourSaut(Mario *mario);
 void sauter(Mario *mario);
+void verifierCollectePieces(Mario *mario, char grille[20][40]);
 
 #endif
 
