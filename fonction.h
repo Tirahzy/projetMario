@@ -34,9 +34,12 @@ int est_touche;
 }Brique;
 
 typedef struct {
-int x;
-int y;
-int visible;
+    int x;
+    int y;
+    int w;
+    int h;
+    int visible;
+    int est_touche;
 }Piece;
 
 void initialiserMario(Mario *mario);
