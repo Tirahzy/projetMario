@@ -8,6 +8,7 @@
 
 #define SOL 0  // Ligne du sol (hauteur fixe)
 
+//initialisation de mario
 void initialiserMario(Mario *mario) {
     mario->x = 0;
     mario->y = SOL;
@@ -15,8 +16,10 @@ void initialiserMario(Mario *mario) {
     mario->contact = 1;
     mario->points = 0;
     mario->pieces = 0;
+    mario->vie = 3;
 }
 
+//initialisation de la grille 20x40
 void initialiserGrille(char grille[20][40]) {
     for (int y = 0; y < 20; y++) {
         for (int x = 0; x < 40; x++) {
@@ -32,6 +35,7 @@ void initialiserGrille(char grille[20][40]) {
     grille[18][25] = 'O';
 }
 
+//afficher la grille
 void afficherGrille(char grille[20][40], Mario *mario) {
     system("cls"); // Nettoyer l'écran
     for (int y = 0; y < 20; y++) {
@@ -46,8 +50,10 @@ void afficherGrille(char grille[20][40], Mario *mario) {
     }
     printf("Score: %d\n", mario->points);
     printf("Pièces: %d\n", mario->pieces);
+    printf(" Vie : %d", mario->vie);
 }
 
+// deplacement de mario
 void deplacement(Mario *mario, char direction) {
     switch (direction) {
         case 'q':
@@ -68,6 +74,7 @@ void deplacement(Mario *mario, char direction) {
     }
 }
 
+// sauter
 void sauter(Mario *mario) {
     if (mario->contact == 1) {
         mario->sauter = 2;
@@ -75,6 +82,7 @@ void sauter(Mario *mario) {
     }
 }
 
+// mise a jour du saut
 void miseAJourSaut(Mario *mario) {
     if (mario->sauter > 0) {
         mario->y += 1;
@@ -86,6 +94,7 @@ void miseAJourSaut(Mario *mario) {
     }
 }
 
+//verification et compteur des pieces/scores
 void verifierCollectePieces(Mario *mario, char grille[20][40]) {
     int y = 19 - mario->y;
     int x = mario->x;
@@ -93,14 +102,20 @@ void verifierCollectePieces(Mario *mario, char grille[20][40]) {
         mario->pieces++;
         mario->points += 100;
         grille[y][x] = '.';
+        if (mario->pieces % 100 == 0 && mario->pieces > 0) {
+            mario->vie++;
+        }
+
     }
 }
 
+//l'écran se rafraichis
 void clearScreen() {
     printf("\033[H\033[J"); // Déplace le curseur en haut à gauche et efface l'écran
 }
 
 
+//le main
 int main() {
     Mario mario;
     char grille[20][40];
@@ -112,8 +127,8 @@ int main() {
     printf("Bienvenue dans Mario simplifié !\n");
     printf("Commandes :\n");
     printf("Z : Sauter\n");
-    printf("Q : Gauche\n");
     printf("D : Droite\n");
+    printf("Q : Gauche\n");
     printf("Espace : Quitter\n");
     Sleep(2000);
     system("cls");
