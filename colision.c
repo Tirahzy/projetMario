@@ -18,6 +18,7 @@ int collisionPlante(Mario *mario, Plante *plante)
       if (mario->x < plante->x && mario->x + mario->w > plante->x &&  //condition de collision entre deux rectangles
           mario->y < plante->y && mario->y + mario->h > plante->y) {
           plante->est_touche = 1;
+            mario->vie = -1;
           return 0;
       } else {
           return 1;

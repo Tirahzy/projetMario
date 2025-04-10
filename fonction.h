@@ -35,11 +35,4 @@ int est_touche;
 
 
 
-void initialiserMario(Mario *mario);
-void afficherGrille(char grille[20][40], Mario *mario);
-void initialiserGrille(char grille[20][40]);
-void deplacement(Mario *mario, char direction);
-void miseAJourSaut(Mario *mario);
-void sauter(Mario *mario);
-
-#endif
+void collionPlante(Mario *mario, Plante *plante);
