@@ -33,6 +33,9 @@ void initialiserGrille(char grille[20][40]) {
     grille[18][5] = 'O';
     grille[18][15] = 'O';
     grille[18][25] = 'O';
+    grille[19][10] = 'P';
+    grille[19][20] = 'P';
+    grille[19][30] = 'P';
 }
 
 //afficher la grille
@@ -48,9 +51,9 @@ void afficherGrille(char grille[20][40], Mario *mario) {
         }
         printf("\n");
     }
-    printf("Score: %d\n", mario->points);
-    printf("Pièces: %d\n", mario->pieces);
-    printf(" Vie : %d", mario->vie);
+    printf("Score: %d \n", mario->points);
+    printf("Pieces: %d \n", mario->pieces);
+    printf(" Vie : %d \n", mario->vie);
 }
 
 // deplacement de mario
@@ -94,6 +97,16 @@ void miseAJourSaut(Mario *mario) {
     }
 }
 
+// fin du jeu
+void gameOver(Mario *mario) {
+    system("cls");
+    printf("\n Game Over \n");
+    printf(" Score final : %d \n", mario->points);
+    printf(" Appuie sur une touche pour quitter \n");
+    _getch();
+    exit(0);
+}
+
 //verification et compteur des pieces/scores
 void verifierCollectePieces(Mario *mario, char grille[20][40]) {
     int y = 19 - mario->y;
@@ -105,7 +118,18 @@ void verifierCollectePieces(Mario *mario, char grille[20][40]) {
         if (mario->pieces % 100 == 0 && mario->pieces > 0) {
             mario->vie++;
         }
+    }
+}
 
+//verification collision plante et compteur de vie
+void verifierPlantes(Mario *mario, char grille[20][40]) {
+    int y = 19 - mario->y;
+    int x = mario->x;
+    if (grille[y][x] == 'P') {
+        mario->vie--;
+        if (mario->vie <= 0) {
+            gameOver(mario);
+        }
     }
 }
 
@@ -115,7 +139,6 @@ void clearScreen() {
 }
 
 
-//le main
 int main() {
     Mario mario;
     char grille[20][40];
@@ -124,7 +147,7 @@ int main() {
     initialiserMario(&mario);
     initialiserGrille(grille);
 
-    printf("Bienvenue dans Mario simplifié !\n");
+    printf("Bienvenue dans Mario simplifie !\n");
     printf("Commandes :\n");
     printf("Z : Sauter\n");
     printf("D : Droite\n");
@@ -140,7 +163,7 @@ int main() {
         if (_kbhit()) {
             input = _getch();
             if (input == 32) {
-                printf("Merci d'avoir joué !\n");
+                printf("Merci d'avoir joué ! \n");
                 break;
             }
             deplacement(&mario, input);
@@ -148,14 +171,8 @@ int main() {
 
         miseAJourSaut(&mario);
         verifierCollectePieces(&mario, grille);
+        verifierPlantes(&mario, grille);
         Sleep(50);
     }
     return 0;
 }
-
-
-
-
-
-
-
