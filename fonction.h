@@ -33,14 +33,7 @@ int h;
 int est_touche;
 }Brique;
 
-typedef struct {
-    int x;
-    int y;
-    int w;
-    int h;
-    int visible;
-    int est_touche;
-}Piece;
+
 
 void initialiserMario(Mario *mario);
 void afficherGrille(char grille[20][40], Mario *mario);
