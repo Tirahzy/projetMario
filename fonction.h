@@ -20,14 +20,14 @@ typedef struct {
 
 void clearScreen();
 void initialiserMario(Mario *mario);
-void afficherGrille(char grille[20][40], Mario *mario);
-void initialiserGrille(char grille[20][40]);
+void afficherMap(Mario *mario, char map[10][200]);
 void deplacement(Mario *mario, char direction);
 void miseAJourSaut(Mario *mario);
 void sauter(Mario *mario);
-void verifierCollectePieces(Mario *mario, char grille[20][40]);
-void verifierPlantes(Mario *mario, char grille[20][40]);
-void genererPieces(Mario *mario,char grille[20][40]);
+void verifierCollectePieces(Mario *mario, char map[10][200]);
+void verifierPlantes(Mario *mario, char map[10][200]);
+void afficherInfo(Mario *mario);
+
 
 #endif
 

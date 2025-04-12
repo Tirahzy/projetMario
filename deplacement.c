@@ -3,7 +3,6 @@
 #include <conio.h>
 #include <windows.h>
 #include <unistd.h>
-
 #include "fonction.h"
 
 #define SOL 0  // Ligne du sol (hauteur fixe)
@@ -19,41 +18,37 @@ void initialiserMario(Mario *mario) {
     mario->vie = 3;
 }
 
-//initialisation de la grille 20x40
-void initialiserGrille(char grille[20][40]) {
-    for (int y = 0; y < 20; y++) {
-        for (int x = 0; x < 40; x++) {
-            if (y == 19) {
-                grille[y][x] = '_';
-            } else {
-                grille[y][x] = '.';
-            }
-        }
-    }
-    grille[18][5] = 'O';
-    grille[18][15] = 'O';
-    grille[18][25] = 'O';
-    grille[19][10] = 'P';
-    grille[19][20] = 'P';
-    grille[19][30] = 'P';
-}
+// fonction de la camera de Mario
+void afficherMap(Mario *mario, char map[10][200]) {
+    system("cls");
 
-//afficher la grille
-void afficherGrille(char grille[20][40], Mario *mario) {
-    system("cls"); // Nettoyer l'écran
-    for (int y = 0; y < 20; y++) {
-        for (int x = 0; x < 40; x++) {
-            if (x == mario->x && y == 19 - mario->y) {
+    int cameraX = mario->x - 40 / 2;
+    if (cameraX < 0) cameraX = 0;
+    if (cameraX > 200 - 40) cameraX = 200 - 40;
+
+    for (int y = 0; y < 10; y++) {
+        for (int x = cameraX; x < cameraX + 40; x++) {
+            if (x == mario->x && y == 10 - 1 - mario->y) {
                 printf("@");
             } else {
-                printf("%c", grille[y][x]);
+                printf("%c", map[y][x]);
             }
         }
         printf("\n");
     }
-    printf("Score: %d \n", mario->points);
-    printf("Pieces: %d \n", mario->pieces);
-    printf(" Vie : %d \n", mario->vie);
+}
+
+// affichage des données a chaque iteration
+void afficherInfo(Mario *mario) {
+    printf("Score: %d | Pièces: %d | Vie: %d\n", mario->points, mario->pieces, mario->vie);
+}
+
+// sauter
+void sauter(Mario *mario) {
+    if (mario->contact == 1) {
+        mario->sauter = 2;
+        mario->contact = 0;
+    }
 }
 
 // deplacement de mario
@@ -65,7 +60,7 @@ void deplacement(Mario *mario, char direction) {
             }
             break;
         case 'd':
-            if (mario->x < 39) {
+            if (mario->x < 200 - 1) {
                 mario->x += 1;
             }
             break;
@@ -74,14 +69,6 @@ void deplacement(Mario *mario, char direction) {
             break;
         default:
             break;
-    }
-}
-
-// sauter
-void sauter(Mario *mario) {
-    if (mario->contact == 1) {
-        mario->sauter = 2;
-        mario->contact = 0;
     }
 }
 
@@ -100,52 +87,81 @@ void miseAJourSaut(Mario *mario) {
 // fin du jeu
 void gameOver(Mario *mario) {
     system("cls");
-    printf("\n Game Over \n");
-    printf(" Score final : %d \n", mario->points);
-    printf(" Appuie sur une touche pour quitter \n");
+    printf("\n\n");
+    printf("*******************************\n");
+    printf("*         GAME OVER          *\n");
+    printf("*                            *\n");
+    printf("*  Score final : %5d       *\n", mario->points);
+    printf("*  Pieces collectees : %3d   *\n", mario->pieces);
+    printf("*                            *\n");
+    printf("* Appuie sur une touche pour *\n");
+    printf("*         quitter            *\n");
+    printf("*******************************\n");
+    fflush(stdout);
+    Sleep(2000);
     _getch();
     exit(0);
 }
 
 //verification et compteur des pieces/scores
-void verifierCollectePieces(Mario *mario, char grille[20][40]) {
-    int y = 19 - mario->y;
+void verifierCollectePieces(Mario *mario, char map[10][200]) {
+    int y = 9 - mario->y;
     int x = mario->x;
-    if (grille[y][x] == 'O') {
-        mario->pieces++;
-        mario->points += 100;
-        grille[y][x] = '.';
-        if (mario->pieces % 100 == 0 && mario->pieces > 0) {
-            mario->vie++;
+
+    // Vérification des limites de la map
+    if (y >= 0 && y < 10 && x >= 0 && x < 200) {
+        if (map[y][x] == 'O') {
+            mario->pieces++;
+            mario->points += 100;
+            map[y][x] = '.';
+            if (mario->pieces % 100 == 0 && mario->pieces > 0) {
+                mario->vie++;
+            }
         }
     }
 }
 
 //verification collision plante et compteur de vie
-void verifierPlantes(Mario *mario, char grille[20][40]) {
-    int y = 19 - mario->y;
+void verifierPlantes(Mario *mario, char map[10][200]) {
+    int y = 9 - mario->y;
     int x = mario->x;
-    if (grille[y][x] == 'P') {
-        mario->vie--;
-        if (mario->vie <= 0) {
-            gameOver(mario);
+
+    if (y >= 0 && y < 10 && x >= 0 && x < 200) {
+        if (map[y][x] == 'P') {
+            mario->vie--;
+            // Modification : Deplacer Mario un peu en arrière pour eviter de rester sur la plante
+            if (mario->x > 0) {
+                mario->x -= 2;
+            }
+            if (mario->vie <= 0) {
+                gameOver(mario);
+            }
         }
     }
 }
 
 //l'écran se rafraichis
 void clearScreen() {
-    printf("\033[H\033[J"); // Déplace le curseur en haut à gauche et efface l'écran
+    system("cls");
 }
-
 
 int main() {
     Mario mario;
-    char grille[20][40];
     char input;
+    char map[10][200] = {
+        "........................................................................................................................................................................................................",
+        "........................................................................................................................................................................................................",
+        "........................................................................................................................................................................................................",
+        "........................................................................................................................................................................................................",
+        "........................................................................................................................................................................................................",
+        "........................................................................................................................................................................................................",
+        "........................................................OOO.............................................................................................................................................",
+        "..............................................########..................................................................................................................................................",
+        "........................OO..............####............................................................................................................................................................",
+        "___________________P______________P______________P___________________P____________________P__________________P___________________P____________________P_________________________________________________"
+    };
 
     initialiserMario(&mario);
-    initialiserGrille(grille);
 
     printf("Bienvenue dans Mario simplifie !\n");
     printf("Commandes :\n");
@@ -158,7 +174,8 @@ int main() {
 
     while (1) {
         clearScreen(); // nettoyer ecran
-        afficherGrille(grille, &mario);
+        afficherMap(&mario, map);
+        afficherInfo(&mario);
 
         if (_kbhit()) {
             input = _getch();
@@ -170,9 +187,10 @@ int main() {
         }
 
         miseAJourSaut(&mario);
-        verifierCollectePieces(&mario, grille);
-        verifierPlantes(&mario, grille);
-        Sleep(50);
+        verifierCollectePieces(&mario, map);
+        verifierPlantes(&mario, map);
+
+        Sleep(100);
     }
     return 0;
 }
