@@ -230,7 +230,7 @@ void dessinerTexture(SDL_Renderer *renderer, SDL_Texture *texture, int x, int y,
     SDL_RenderCopy(renderer, texture, NULL, &dest);
 }
 
-
+//perso
 
 
 
@@ -654,7 +654,7 @@ TexturesJeu chargerTextures(SDL_Renderer *renderer)
 {
     TexturesJeu textures;
     
-    textures.perso = chargerTextureBMP(renderer, "img/perso.bmp");
+    textures.perso = chargerTextureBMP(renderer, "img/mario.bmp");
     textures.brique = chargerTextureBMP(renderer, "img/brique.bmp");
     textures.piece = chargerTextureBMP(renderer, "img/piece.bmp");
     textures.tuyau = chargerTextureBMP(renderer, "img/tuyau.bmp");
