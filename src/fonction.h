@@ -52,6 +52,11 @@
 #define ETAT_JEU 1
 #define ETAT_GAME_OVER 2
 #define ETAT_NIVEAU_TERMINE 3
+#define ETAT_SELECTION 4
+
+#define NB_BOUTONS_MENU 3
+
+#define FICHIER_SAUVEGARDE "sauvegarde.dat"
 
 typedef struct
 {
@@ -81,6 +86,8 @@ typedef struct
     SDL_Texture *toad;
 
     SDL_Texture *background;
+
+    SDL_Texture *vie;
 } TexturesJeu;
 
 typedef struct
@@ -117,10 +124,39 @@ typedef struct
 
 typedef struct
 {
+    SDL_Rect corps;
+    int actif;
+    float vitesseY;
+    float vitesseX;
+    int direction;
+} Champignon;
+
+typedef struct
+{
+    SDL_Rect corps;
+    int estGrand;
+    int invincible;      // 1 = invincible, 0 = normal
+    int tempsInvincible; // temps en ms où il est devenu invincible
+} Mario;
+
+typedef struct
+{
     SDL_Rect rect;
     char *texte;
     int hover;
 } Bouton;
+
+typedef struct
+{
+    int score;
+    int vies;
+    int scoreTotal;
+} ScoreJeu;
+
+typedef struct
+{
+    int niveau;
+} Sauvegarde;
 
 // Tableau de caractères pour les niveaux (fichier map.c)
 extern char niveau1[18][200];
@@ -160,7 +196,7 @@ void mettreAJourEnnemis();
 int detecterCollisionEntreEnnemis(SDL_Rect ennemi, int indexEnnemi);
 
 int detecterCollisionEnnemi(SDL_Rect joueur);
-int sauterSurEnnemi(SDL_Rect joueur, float vitesseSaut);
+int sauterSurEnnemi(SDL_Rect joueur, float vitesseSaut, ScoreJeu *scoreData);
 
 void initialiserEffets();
 void ajouterEffetEcrasement(int x, int y);
@@ -173,9 +209,7 @@ int interagirAvecCarapaces(SDL_Rect *joueur, float *vitesseSaut);
 void carapacesTuantEnnemis();
 void dessinerCarapaces(SDL_Renderer *renderer, int cameraX, TexturesJeu textures);
 
-void afficherScore(SDL_Renderer *renderer, int nbPieces, TTF_Font *police);
-
-void initialiserBoutons(Bouton boutons[], int nombreBoutons);
+void initialiserBoutons(Bouton boutons[], int nombreBoutons, const char *labels[]);
 void dessinerBoutons(SDL_Renderer *renderer, Bouton boutons[], int nombreBoutons, TTF_Font *police);
 int pointDansRect(int x, int y, SDL_Rect rect);
 
@@ -188,6 +222,17 @@ void afficherMonde2(SDL_Renderer *renderer, TTF_Font *police);
 void afficherMonde3(SDL_Renderer *renderer, TTF_Font *police);
 void afficherEcranFin(SDL_Renderer *renderer, TTF_Font *police);
 
+int gererGameOver(int *continuer, Bouton boutons[], int nombreBoutons);
+
 void dessinerFondParallaxe(SDL_Renderer *renderer, SDL_Texture *texture, int cameraX);
+
+int detecterCollisionBlocMystere(SDL_Rect joueur, float vitesseSaut);
+void ChampignonSiBlocMystereTouche(SDL_Rect joueur, SDL_Rect *champignon, float vitesseSaut);
+
+void afficherScore(SDL_Renderer *renderer, ScoreJeu *scoreJeu, TTF_Font *police);
+void afficherVies(SDL_Renderer *renderer, ScoreJeu *scoreJeu, TexturesJeu textures);
+
+void sauvegarderPartie(int niveau);
+int chargerPartie(int *niveau);
 
 #endif

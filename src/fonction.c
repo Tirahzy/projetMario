@@ -84,6 +84,7 @@ TexturesJeu chargerTextures(SDL_Renderer *renderer)
     textures.toad = chargerTextureBMP(renderer, "img/toad.bmp");
 
     textures.background = chargerTextureBMP(renderer, "img/fond.bmp");
+    textures.vie = chargerTextureBMP(renderer, "img/vie.bmp");
 
     return textures;
 }
@@ -142,6 +143,8 @@ void libererTextures(TexturesJeu textures)
 
     if (textures.background)
         SDL_DestroyTexture(textures.background);
+    if (textures.vie)
+        SDL_DestroyTexture(textures.vie);
 }
 
 //---------------------------------------------------------
@@ -216,11 +219,63 @@ int detecterCollision(SDL_Rect joueur)
             if (x < 0 || x >= MAP_LARGEUR || y < 0 || y >= MAP_HAUTEUR)
                 continue;
 
-            if (map[y][x] != 0 && map[y][x] != PIECE && map[y][x] != TOAD)
-                return 1;
+            int bloc = map[y][x];
+
+            // On ignore les pièces et TOAD
+            if (bloc != 0 && bloc != PIECE && bloc != TOAD)
+            {
+                // Si c'est un bloc mystère, vérifier si Mario le touche par dessous
+                if (bloc == BLOC_RECOMPENSE)
+                {
+                    int hautBloc = y * BLOC_SIZE;
+                    int basJoueur = joueur.y + joueur.h;
+
+                    // Collision par en dessous → on ne bloque pas
+                    if (basJoueur <= hautBloc + 5)
+                        continue;
+                }
+
+                return 1; // collision détectée
+            }
         }
     }
+
+    return 0; // pas de collision
+}
+
+//---------------------------------------------------------
+// gestion des blocs mystères
+int detecterCollisionBlocMystere(SDL_Rect joueur, float vitesseSaut)
+{
+    if (vitesseSaut >= 0)
+        return 0; // On ne vérifie que si Mario saute vers le haut
+
+    int xCentre = (joueur.x + joueur.w / 2) / BLOC_SIZE;
+    int yDessus = (joueur.y - 1) / BLOC_SIZE;
+
+    if (xCentre >= 0 && xCentre < MAP_LARGEUR && yDessus >= 0 && yDessus < MAP_HAUTEUR)
+    {
+        if (map[yDessus][xCentre] == BLOC_RECOMPENSE)
+        {
+            return 1;
+        }
+    }
+
     return 0;
+}
+Champignon champi = {{0, 0, BLOC_SIZE, BLOC_SIZE}, 0, 0.0f};
+
+void ChampignonSiBlocMystereTouche(SDL_Rect joueur, SDL_Rect *champignon, float vitesseSaut)
+{
+    int xBloc = (joueur.x + joueur.w / 2) / BLOC_SIZE;
+    int yBloc = (joueur.y - 1) / BLOC_SIZE;
+
+    if (map[yBloc][xBloc] == BLOC_RECOMPENSE)
+    {
+        map[yBloc][xBloc] = BLOC_STRUCTURE;
+        champignon->x = xBloc * BLOC_SIZE;
+        champignon->y = (yBloc - 1) * BLOC_SIZE;
+    }
 }
 
 //---------------------------------------------------------
@@ -560,7 +615,7 @@ int detecterCollisionEnnemi(SDL_Rect joueur)
     return 0;
 }
 
-int sauterSurEnnemi(SDL_Rect joueur, float vitesseSaut)
+int sauterSurEnnemi(SDL_Rect joueur, float vitesseSaut, ScoreJeu *scoreData)
 {
     if (vitesseSaut > 0)
     {
@@ -576,12 +631,10 @@ int sauterSurEnnemi(SDL_Rect joueur, float vitesseSaut)
                     if (joueur.x < ennemis[i].rect.x + ennemis[i].rect.w &&
                         joueur.x + joueur.w > ennemis[i].rect.x)
                     {
-
                         ajouterEffetEcrasement(ennemis[i].rect.x, ennemis[i].rect.y);
 
                         if (ennemis[i].type == KOOPA)
                         {
-
                             for (int j = 0; j < MAX_ENNEMIS; j++)
                             {
                                 if (!carapaces[j].actif)
@@ -593,6 +646,12 @@ int sauterSurEnnemi(SDL_Rect joueur, float vitesseSaut)
                                 }
                             }
                         }
+
+                        // Il gagne 400 points
+                        // et un bonus de 100 points par ennemi tué dans les 5 secondes
+                        scoreData->score += 400;
+
+                        // Afficher l'effet de points (optionnel si vous avez cette fonction)
 
                         ennemis[i].actif = 0;
                         return 1;
@@ -698,6 +757,14 @@ void initialiserCarapaces()
     for (int i = 0; i < MAX_ENNEMIS; i++)
     {
         carapaces[i].actif = 0;
+        carapaces[i].mobile = 0;
+        carapaces[i].vitesse = 0;
+        carapaces[i].direction = 0;
+        carapaces[i].tempsLancement = 0;
+        carapaces[i].rect.x = 0;
+        carapaces[i].rect.y = 0;
+        carapaces[i].rect.w = BLOC_SIZE;
+        carapaces[i].rect.h = BLOC_SIZE;
     }
 }
 
@@ -768,14 +835,19 @@ int interagirAvecCarapaces(SDL_Rect *joueur, float *vitesseSaut)
         {
             if (!carapaces[i].mobile)
             {
-                carapaces[i].mobile = SDL_TRUE;
+                // On l’active (Mario l’a tapée en marchant dessus)
+                carapaces[i].mobile = 1;
                 carapaces[i].vitesse = 6;
-                carapaces[i].direction = (joueur->x < c->x) ? DROITE : GAUCHE; // Direction dans opossé au mario
+                carapaces[i].direction = (joueur->x < c->x) ? DROITE : GAUCHE;
                 carapaces[i].tempsLancement = maintenant;
             }
-            else if (maintenant - carapaces[i].tempsLancement >= 300)
+            else
             {
-                return 1;
+                // Ne tuer Mario que si la carapace est mobile depuis plus de 200 ms
+                if (carapaces[i].mobile && maintenant - carapaces[i].tempsLancement >= 200)
+                {
+                    return 1;
+                }
             }
         }
     }
@@ -830,10 +902,10 @@ void dessinerCarapaces(SDL_Renderer *renderer, int cameraX, TexturesJeu textures
 //---------------------------------------------------------
 // Affichage du score / vies
 
-void afficherScore(SDL_Renderer *renderer, int nbPieces, TTF_Font *police)
+void afficherScore(SDL_Renderer *renderer, ScoreJeu *scoreJeu, TTF_Font *police)
 {
-    char texte[32];
-    sprintf(texte, "Score : %d", nbPieces);
+    char texte[64];
+    sprintf(texte, "Score : %d", scoreJeu->score);
 
     SDL_Color couleur = {255, 255, 255};
     SDL_Surface *surfaceTexte = TTF_RenderText_Solid(police, texte, couleur);
@@ -859,18 +931,34 @@ void afficherScore(SDL_Renderer *renderer, int nbPieces, TTF_Font *police)
 }
 
 // FONCTION VIES
+void afficherVies(SDL_Renderer *renderer, ScoreJeu *scoreJeu, TexturesJeu textures)
+{
+    int taille = 30;
+    int marge = 10;
+    SDL_Rect rect;
+    rect.y = 10;
+    rect.w = taille;
+    rect.h = taille;
+
+    // Aligné à droite
+    rect.x = LONGUEUR_FENETRE - scoreJeu->vies * (taille + marge);
+
+    for (int i = 0; i < scoreJeu->vies; i++)
+    {
+        SDL_RenderCopy(renderer, textures.vie, NULL, &rect);
+        rect.x += taille + marge;
+    }
+}
 
 //---------------------------------------------------------
 // Boutons pour Menu
 
-void initialiserBoutons(Bouton boutons[], int nombreBoutons)
+void initialiserBoutons(Bouton boutons[], int nombreBoutons, const char *labels[])
 {
     int largeur = 200;
     int hauteur = 50;
     int espacement = 20;
     int debutY = (LARGEUR_FENETRE - (nombreBoutons * hauteur + (nombreBoutons - 1) * espacement)) / 2;
-
-    char *textes[] = {"Jouer", "Quitter"};
 
     for (int i = 0; i < nombreBoutons; i++)
     {
@@ -878,7 +966,7 @@ void initialiserBoutons(Bouton boutons[], int nombreBoutons)
         boutons[i].rect.y = debutY + i * (hauteur + espacement);
         boutons[i].rect.w = largeur;
         boutons[i].rect.h = hauteur;
-        boutons[i].texte = textes[i];
+        boutons[i].texte = labels[i]; // on pointe sur la chaÃ®ne constante
         boutons[i].hover = 0;
     }
 }
@@ -938,7 +1026,6 @@ int pointDansRect(int x, int y, SDL_Rect rect)
 int gererEvenementsMenu(int *continuer, Bouton boutons[], int nombreBoutons)
 {
     SDL_Event event;
-
     while (SDL_PollEvent(&event))
     {
         switch (event.type)
@@ -949,40 +1036,25 @@ int gererEvenementsMenu(int *continuer, Bouton boutons[], int nombreBoutons)
 
         case SDL_MOUSEMOTION:
         {
-            int mouseX = event.motion.x;
-            int mouseY = event.motion.y;
-
+            int mx = event.motion.x, my = event.motion.y;
             for (int i = 0; i < nombreBoutons; i++)
-            {
-                if (mouseX >= boutons[i].rect.x && mouseX <= boutons[i].rect.x + boutons[i].rect.w &&
-                    mouseY >= boutons[i].rect.y && mouseY <= boutons[i].rect.y + boutons[i].rect.h)
-                {
-                    boutons[i].hover = 1;
-                }
-                else
-                {
-                    boutons[i].hover = 0;
-                }
-            }
+                boutons[i].hover = pointDansRect(mx, my, boutons[i].rect);
         }
         break;
 
         case SDL_MOUSEBUTTONDOWN:
             if (event.button.button == SDL_BUTTON_LEFT)
             {
-                int mouseX = event.button.x;
-                int mouseY = event.button.y;
-
+                int mx = event.button.x, my = event.button.y;
                 for (int i = 0; i < nombreBoutons; i++)
                 {
-                    if (mouseX >= boutons[i].rect.x && mouseX <= boutons[i].rect.x + boutons[i].rect.w &&
-                        mouseY >= boutons[i].rect.y && mouseY <= boutons[i].rect.y + boutons[i].rect.h)
+                    if (pointDansRect(mx, my, boutons[i].rect))
                     {
-
                         if (i == 0)
                             return ETAT_JEU;
-
                         else if (i == 1)
+                            return ETAT_SELECTION;
+                        else if (i == 2)
                             *continuer = 0;
                     }
                 }
@@ -991,13 +1063,10 @@ int gererEvenementsMenu(int *continuer, Bouton boutons[], int nombreBoutons)
 
         case SDL_KEYDOWN:
             if (event.key.keysym.sym == SDLK_ESCAPE)
-            {
                 *continuer = 0;
-            }
             break;
         }
     }
-
     return -1;
 }
 
@@ -1102,6 +1171,72 @@ int gererEvenementsNiveauTermine(int *continuer, Bouton boutons[], int nombreBou
 
     return -1;
 }
+
+int gererGameOver(int *continuer, Bouton boutons[], int nombreBoutons)
+{
+    SDL_Event event;
+
+    while (SDL_PollEvent(&event))
+    {
+        switch (event.type)
+        {
+        case SDL_QUIT:
+            *continuer = 0;
+            break;
+
+        case SDL_MOUSEMOTION:
+        {
+            int mouseX = event.motion.x;
+            int mouseY = event.motion.y;
+
+            for (int i = 0; i < nombreBoutons; i++)
+            {
+                if (mouseX >= boutons[i].rect.x && mouseX <= boutons[i].rect.x + boutons[i].rect.w &&
+                    mouseY >= boutons[i].rect.y && mouseY <= boutons[i].rect.y + boutons[i].rect.h)
+                {
+                    boutons[i].hover = 1;
+                }
+                else
+                {
+                    boutons[i].hover = 0;
+                }
+            }
+        }
+        break;
+
+        case SDL_MOUSEBUTTONDOWN:
+            if (event.button.button == SDL_BUTTON_LEFT)
+            {
+                int mouseX = event.button.x;
+                int mouseY = event.button.y;
+
+                for (int i = 0; i < nombreBoutons; i++)
+                {
+                    if (mouseX >= boutons[i].rect.x && mouseX <= boutons[i].rect.x + boutons[i].rect.w &&
+                        mouseY >= boutons[i].rect.y && mouseY <= boutons[i].rect.y + boutons[i].rect.h)
+                    {
+
+                        if (i == 0)
+                            return ETAT_JEU;
+                        else if (i == 1)
+                            return ETAT_MENU;
+                    }
+                }
+            }
+            break;
+
+        case SDL_KEYDOWN:
+            if (event.key.keysym.sym == SDLK_ESCAPE)
+            {
+                return ETAT_MENU;
+            }
+            break;
+        }
+    }
+
+    return -1;
+}
+
 
 //---------------------------------------------------------
 // Affichage des transitions entre les mondes
@@ -1246,6 +1381,7 @@ void afficherEcranFin(SDL_Renderer *renderer, TTF_Font *police)
     SDL_DestroyTexture(textureTexte);
 }
 
+
 //---------------------------------------------------------
 // Affichage background
 
@@ -1260,4 +1396,34 @@ void dessinerFondParallaxe(SDL_Renderer *renderer, SDL_Texture *texture, int cam
         SDL_RenderCopy(renderer, texture, NULL, &dst);
         dst.x += LONGUEUR_FENETRE;
     }
+}
+
+//---------------------------------------------------------
+// Fonction de sauvegarde de la partie
+void sauvegarderPartie(int niveau)
+{
+    FILE *fichier = fopen(FICHIER_SAUVEGARDE, "wb");
+    if (!fichier)
+        return;
+
+    Sauvegarde sauvegarde = {niveau};
+    fwrite(&sauvegarde, sizeof(Sauvegarde), 1, fichier);
+    fclose(fichier);
+}
+
+int chargerPartie(int *niveau)
+{
+    FILE *fichier = fopen(FICHIER_SAUVEGARDE, "rb");
+    if (!fichier)
+        return 0;
+
+    Sauvegarde sauvegarde;
+    size_t lu = fread(&sauvegarde, sizeof(Sauvegarde), 1, fichier);
+    fclose(fichier);
+
+    if (lu != 1)
+        return 0;
+
+    *niveau = sauvegarde.niveau;
+    return 1;
 }
